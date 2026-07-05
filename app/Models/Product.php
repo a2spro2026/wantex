@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     protected $fillable = [
-        'category_id', 'name', 'reference', 'unit', 'unit_price', 'purchase_price',
-        'quantity_in_stock', 'min_stock_alert', 'brand', 'location', 'description', 'status',
+        'category_id', 'name', 'reference', 'article_id', 'consistance', 'unit', 'famille',
+        'unit_price', 'purchase_price', 'quantity_in_stock', 'initial_stock',
+        'min_stock_alert', 'brand', 'location', 'description', 'status', 'etat',
     ];
 
     protected function casts(): array
@@ -18,6 +19,7 @@ class Product extends Model
         return [
             'unit_price' => 'decimal:2',
             'quantity_in_stock' => 'decimal:3',
+            'initial_stock' => 'decimal:3',
             'min_stock_alert' => 'decimal:3',
         ];
     }
@@ -35,5 +37,25 @@ class Product extends Model
     public function isLowStock(): bool
     {
         return $this->quantity_in_stock <= $this->min_stock_alert;
+    }
+
+    public function etatLabel(): string
+    {
+        if ($this->etat) {
+            return $this->etat;
+        }
+
+        $qty = (float) $this->quantity_in_stock;
+        $min = (float) $this->min_stock_alert;
+
+        if ($qty <= 0) {
+            return 'Rupture';
+        }
+
+        if ($qty <= $min) {
+            return 'Faible';
+        }
+
+        return 'Dispo';
     }
 }

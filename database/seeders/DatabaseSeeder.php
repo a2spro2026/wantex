@@ -6,7 +6,6 @@ use App\Models\Attendance;
 use App\Models\Client;
 use App\Models\Chantier;
 use App\Models\Employee;
-use App\Models\Expense;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -31,7 +30,7 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@batixpert.ma'],
             [
-                'name' => 'Administrateur',
+                'name' => 'MR AHMED',
                 'password' => Hash::make('password'),
                 'role_id' => $adminRole->id,
                 'phone' => '0600000000',
@@ -60,6 +59,7 @@ class DatabaseSeeder extends Seeder
                 'city' => 'Rabat',
                 'payment_terms' => '30 jours',
                 'status' => 'actif',
+                'initial_balance' => 0,
             ]
         );
 
@@ -123,17 +123,6 @@ class DatabaseSeeder extends Seeder
                 'tva' => 3000,
                 'total_ttc' => 18000,
                 'status' => 'valide',
-            ]
-        );
-
-        Expense::firstOrCreate(
-            ['reference' => 'CHG-DEMO-001'],
-            [
-                'category' => 'transport',
-                'chantier_id' => $chantier->id,
-                'amount' => 3500,
-                'expense_date' => now(),
-                'description' => 'Transport matériaux',
             ]
         );
 
@@ -221,16 +210,5 @@ class DatabaseSeeder extends Seeder
                 ['notes' => 'Sortie chantier B', 'user_id' => User::first()?->id]
             );
         }
-
-        Expense::firstOrCreate(
-            ['reference' => 'CHG-DEMO-002'],
-            [
-                'category' => 'carburant',
-                'chantier_id' => $chantierB->id,
-                'amount' => 1200,
-                'expense_date' => now()->subDays(3),
-                'description' => 'Carburant engins',
-            ]
-        );
     }
 }

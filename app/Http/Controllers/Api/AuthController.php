@@ -63,6 +63,7 @@ class AuthController extends Controller
             'role' => $user->role?->only(['id', 'name', 'slug']),
             'permissions' => $user->role?->permissions->pluck('slug') ?? [],
             'is_admin' => $user->isAdmin(),
+            'title' => $user->isAdmin() ? 'Directeur Général' : ($user->role?->name ?? ''),
         ];
     }
 }

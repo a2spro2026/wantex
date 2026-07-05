@@ -10,7 +10,7 @@ export default function Layout() {
     const isDashboard = pathname === '/';
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
+        <div className="min-h-screen h-screen bg-slate-50 dark:bg-slate-950 flex overflow-hidden">
             <Sidebar />
             {mobileOpen && (
                 <>
@@ -18,7 +18,7 @@ export default function Layout() {
                     <Sidebar mobile onClose={() => setMobileOpen(false)} />
                 </>
             )}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 min-h-0">
                 <Header onMenuClick={() => setMobileOpen(true)} />
 
                 {isDashboard && (
@@ -32,7 +32,7 @@ export default function Layout() {
                         <Outlet />
                     </main>
                 ) : (
-                    <main className="flex-1 p-4 lg:p-6 overflow-auto">
+                    <main className="flex-1 flex flex-col min-h-0 overflow-hidden p-4 lg:p-6">
                         <Outlet />
                     </main>
                 )}

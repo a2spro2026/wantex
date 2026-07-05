@@ -150,24 +150,51 @@ class DashboardApiController extends Controller
                 ]);
         }
 
-        $etatConsommation = StockMovement::where('type', 'sortie')
-            ->with(['product', 'chantier'])
-            ->latest()
-            ->limit(25)
-            ->get()
-            ->map(fn ($m) => [
-                'ref' => $m->product?->reference ?? '—',
-                'designation' => $m->product?->name ?? $m->notes ?? '—',
-                'qte' => (float) $m->quantity,
-                'destination' => $m->chantier?->name ?? 'Dépôt',
-                'statut' => $this->mapProductStatut($m->product),
-                'etat' => $this->mapProductEtat($m->product),
-            ]);
+        $etatConsommation = collect();
+        $topConsommation = StockMovement::where('type', 'sortie')
+            ->whereNotNull('product_id')
+            ->select('product_id', DB::raw('SUM(quantity) as total_qte'))
+            ->groupBy('product_id')
+            ->orderByDesc('total_qte')
+            ->limit(5)
+            ->get();
+
+        if ($topConsommation->isNotEmpty()) {
+            $productIds = $topConsommation->pluck('product_id');
+            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+            $topDestinations = StockMovement::where('type', 'sortie')
+                ->whereIn('product_id', $productIds)
+                ->select('product_id', 'chantier_id', DB::raw('SUM(quantity) as qte_chantier'))
+                ->groupBy('product_id', 'chantier_id')
+                ->orderByDesc('qte_chantier')
+                ->get()
+                ->groupBy('product_id')
+                ->map(fn ($group) => $group->sortByDesc('qte_chantier')->first());
+
+            $chantierIds = $topDestinations->pluck('chantier_id')->filter()->unique();
+            $chantiers = Chantier::whereIn('id', $chantierIds)->get()->keyBy('id');
+
+            $etatConsommation = $topConsommation->map(function ($row) use ($products, $topDestinations, $chantiers) {
+                $product = $products->get($row->product_id);
+                $destRow = $topDestinations->get($row->product_id);
+                $chantier = $destRow?->chantier_id ? $chantiers->get($destRow->chantier_id) : null;
+
+                return [
+                    'ref' => $product?->reference ?? '—',
+                    'designation' => $product?->name ?? '—',
+                    'qte' => round((float) $row->total_qte, 3),
+                    'destination' => $chantier?->name ?? 'Dépôt',
+                    'statut' => $this->mapProductStatut($product),
+                    'etat' => $this->mapProductEtat($product),
+                ];
+            });
+        }
 
         if ($etatConsommation->isEmpty()) {
             $chantierNames = Chantier::where('archived', false)->pluck('name');
             $etatConsommation = Product::latest()
-                ->limit(10)
+                ->limit(5)
                 ->get()
                 ->map(fn ($p, $i) => [
                     'ref' => $p->reference,
@@ -254,17 +281,6 @@ class DashboardApiController extends Controller
             return '—';
         }
 
-        $qty = (float) $product->quantity_in_stock;
-        $min = (float) $product->min_stock_alert;
-
-        if ($qty <= 0) {
-            return 'Rupture';
-        }
-
-        if ($qty <= $min) {
-            return 'Faible';
-        }
-
-        return 'Dispo';
+        return $product->etatLabel();
     }
 }

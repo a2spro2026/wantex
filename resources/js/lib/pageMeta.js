@@ -1,6 +1,13 @@
 import { navigation } from '../config/navigation';
 
 export function getPageMeta(pathname) {
+    if (pathname === '/clients/devis/nouveau') {
+        return { title: 'Nouveau Devis', subtitle: 'Client', icon: null };
+    }
+    if (/^\/clients\/devis\/\d+$/.test(pathname)) {
+        return { title: 'Modifier Devis', subtitle: 'Client', icon: null };
+    }
+
     for (const group of navigation) {
         if (group.to === pathname) {
             return { title: group.label, icon: group.icon, subtitle: null };

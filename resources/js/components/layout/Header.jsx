@@ -49,8 +49,18 @@ export default function Header({ onMenuClick }) {
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
                     </button>
                     {user && (
-                        <div className="ml-1 p-0.5 rounded-full hover:ring-2 hover:ring-brand-orange/30 transition-all">
-                            <UserAvatar user={user} size="lg" />
+                        <div className="flex items-center gap-2.5 ml-1 pl-3 border-l border-slate-200 dark:border-slate-700">
+                            <div className="hidden sm:block text-right leading-tight">
+                                <p className="text-sm font-bold text-slate-800 dark:text-white whitespace-nowrap">
+                                    {user.name || 'MR AHMED'}
+                                </p>
+                                <p className="text-[11px] font-semibold text-brand-orange whitespace-nowrap">
+                                    {user.title || 'Directeur Général'}
+                                </p>
+                            </div>
+                            <div className="p-0.5 rounded-full hover:ring-2 hover:ring-brand-orange/30 transition-all">
+                                <UserAvatar user={user} size="lg" />
+                            </div>
                         </div>
                     )}
                 </div>

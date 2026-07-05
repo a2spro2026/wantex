@@ -9,9 +9,10 @@ use App\Http\Controllers\Api\EmployeeApiController;
 use App\Http\Controllers\Api\ExpenseApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PurchaseOrderApiController;
-use App\Http\Controllers\Api\ReportApiController;
+use App\Http\Controllers\Api\QuoteApiController;
 use App\Http\Controllers\Api\SupplierApiController;
 use App\Http\Controllers\Api\TaskApiController;
+use App\Http\Controllers\Api\TransactionApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -26,6 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('chantiers/{chantier}/archive', [ChantierApiController::class, 'archive']);
 
     Route::apiResource('clients', ClientApiController::class);
+    Route::apiResource('quotes', QuoteApiController::class);
+    Route::post('quotes/{quote}/send', [QuoteApiController::class, 'send']);
+    Route::post('quotes/{quote}/validate', [QuoteApiController::class, 'validateQuote']);
     Route::apiResource('suppliers', SupplierApiController::class);
     Route::apiResource('products', ProductApiController::class);
     Route::apiResource('purchase-orders', PurchaseOrderApiController::class);
@@ -33,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('employees', EmployeeApiController::class);
     Route::apiResource('expenses', ExpenseApiController::class);
+    Route::apiResource('transactions', TransactionApiController::class)
+        ->parameters(['transactions' => 'monetary_transaction']);
     Route::apiResource('documents', DocumentApiController::class)->except(['update']);
     Route::get('documents/{document}/download', [DocumentApiController::class, 'download']);
 

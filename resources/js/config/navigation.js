@@ -18,6 +18,7 @@ import {
     // Client
     ContactRound,
     FileCheck,
+    FileSignature,
     CircleDollarSign,
     Receipt,
     Wallet,
@@ -68,6 +69,7 @@ export const navigation = [
         perm: 'clients.view',
         children: [
             { to: '/clients/fiches', label: 'Fiche Client', icon: ContactRound },
+            { to: '/clients/devis', label: 'Devis', icon: FileSignature },
             { to: '/clients/bons-vente', label: 'Bon Vente', icon: FileCheck },
             { to: '/clients/reglements-vente', label: 'Règlement Vente', icon: CircleDollarSign },
             { to: '/clients/factures-ventes', label: 'Facture Ventes', icon: Receipt },
@@ -114,6 +116,7 @@ export const navigation = [
         icon: Landmark,
         perm: 'reglements.view',
         children: [
+            { to: '/monetaire/transactions', label: 'Transaction', icon: ArrowLeftRight },
             { to: '/monetaire/charges', label: 'Charge', icon: MinusCircle },
             { to: '/monetaire/salaires', label: 'Salaire', icon: Coins },
             { to: '/monetaire/tresorerie', label: 'Trésorerie', icon: Vault },

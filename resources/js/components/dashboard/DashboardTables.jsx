@@ -67,7 +67,7 @@ export default function DashboardTables({ tables, loading }) {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <ReportTable
-                    title="Etat Consommation"
+                    title="Etat Consommation — Top 5"
                     icon={Package}
                     columns={consommationColumns}
                     rows={tables?.etat_consommation}

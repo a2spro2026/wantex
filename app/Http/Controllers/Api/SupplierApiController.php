@@ -10,11 +10,26 @@ class SupplierApiController extends Controller
 {
     public function index(Request $request)
     {
-        return response()->json(
-            Supplier::withCount('invoices')
-                ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
-                ->latest()->paginate(15)
-        );
+        $query = Supplier::query()
+            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
+            ->latest();
+
+        $suppliers = $request->boolean('all')
+            ? $query->get()->map(fn ($s) => $this->formatSupplier($s))
+            : $query->paginate(15)->through(fn ($s) => $this->formatSupplier($s));
+
+        return response()->json([
+            'data' => $request->boolean('all') ? $suppliers : $suppliers->items(),
+            'meta' => [
+                'next_id' => $this->nextSupplierCode(),
+                'date' => now()->format('d/m/Y'),
+            ],
+            ...($request->boolean('all') ? [] : [
+                'current_page' => $suppliers->currentPage(),
+                'last_page' => $suppliers->lastPage(),
+                'total' => $suppliers->total(),
+            ]),
+        ]);
     }
 
     public function store(Request $request)
@@ -28,15 +43,23 @@ class SupplierApiController extends Controller
             'city' => 'nullable|string',
             'ice' => 'nullable|string',
             'payment_terms' => 'nullable|string',
+            'reglement' => 'nullable|in:Esp,Chq,Eff,Vir,Vers',
+            'initial_balance' => 'nullable|numeric',
             'status' => 'in:actif,inactif',
         ]);
 
-        return response()->json(Supplier::create($validated), 201);
+        $supplier = Supplier::create([
+            ...$validated,
+            'initial_balance' => $validated['initial_balance'] ?? 0,
+            'status' => $validated['status'] ?? 'actif',
+        ]);
+
+        return response()->json($this->formatSupplier($supplier), 201);
     }
 
     public function show(Supplier $supplier)
     {
-        return response()->json($supplier->load(['invoices']));
+        return response()->json($this->formatSupplier($supplier->load(['invoices'])));
     }
 
     public function update(Request $request, Supplier $supplier)
@@ -46,10 +69,14 @@ class SupplierApiController extends Controller
             'contact_person' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
+            'reglement' => 'nullable|in:Esp,Chq,Eff,Vir,Vers',
+            'initial_balance' => 'nullable|numeric',
             'status' => 'in:actif,inactif',
         ]));
 
-        return response()->json($supplier);
+        return response()->json($this->formatSupplier($supplier));
     }
 
     public function destroy(Supplier $supplier)
@@ -57,5 +84,33 @@ class SupplierApiController extends Controller
         $supplier->delete();
 
         return response()->json(['message' => 'Fournisseur supprimé']);
+    }
+
+    private function nextSupplierCode(): string
+    {
+        $next = (Supplier::max('id') ?? 0) + 1;
+
+        return 'CF-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function formatSupplier(Supplier $supplier): array
+    {
+        return [
+            'id' => $supplier->id,
+            'code' => $supplier->code,
+            'name' => $supplier->name,
+            'contact_person' => $supplier->contact_person,
+            'contact' => $supplier->phone ?: $supplier->contact_person,
+            'email' => $supplier->email,
+            'phone' => $supplier->phone,
+            'address' => $supplier->address,
+            'city' => $supplier->city,
+            'initial_balance' => round((float) $supplier->initial_balance, 2),
+            'solde' => round((float) $supplier->initial_balance, 2),
+            'status' => $supplier->status,
+            'payment_terms' => $supplier->payment_terms,
+            'reglement' => $supplier->reglement,
+            'created_at' => $supplier->created_at?->format('d/m/Y'),
+        ];
     }
 }

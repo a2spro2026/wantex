@@ -5,10 +5,15 @@ import Layout from './components/layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ChantiersPage from './pages/ChantiersPage';
-import AchatsPage from './pages/AchatsPage';
-import StockPage from './pages/StockPage';
+import BonAchatsPage from './pages/BonAchatsPage';
+import FicheProduitPage from './pages/FicheProduitPage';
 import GenericListPage from './pages/GenericListPage';
 import ModulePage from './pages/ModulePage';
+import FicheFournisseurPage from './pages/FicheFournisseurPage';
+import FicheClientPage from './pages/FicheClientPage';
+import DevisListPage from './pages/devis/DevisListPage';
+import DevisFormPage from './pages/devis/DevisFormPage';
+import TransactionsPage from './pages/TransactionsPage';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -20,22 +25,6 @@ function ProtectedRoute({ children }) {
     if (!user) return <Navigate to="/login" replace />;
     return children;
 }
-
-const supplierCols = [
-    { key: 'name', label: 'Nom' },
-    { key: 'contact_person', label: 'Contact' },
-    { key: 'city', label: 'Ville' },
-    { key: 'payment_terms', label: 'Conditions' },
-    { key: 'status', label: 'Statut' },
-];
-
-const clientCols = [
-    { key: 'name', label: 'Nom' },
-    { key: 'contact_person', label: 'Contact' },
-    { key: 'email', label: 'Email' },
-    { key: 'city', label: 'Ville' },
-    { key: 'status', label: 'Statut' },
-];
 
 const employeeCols = [
     { key: 'matricule', label: 'Matricule' },
@@ -60,8 +49,8 @@ function AppRoutes() {
                 <Route index element={<Dashboard />} />
 
                 {/* Fournisseur */}
-                <Route path="fournisseurs/fiches" element={<GenericListPage title="Fiche Fournisseur" subtitle="Gestion des fournisseurs" endpoint="/suppliers" columns={supplierCols} />} />
-                <Route path="fournisseurs/bons-achats" element={<AchatsPage />} />
+                <Route path="fournisseurs/fiches" element={<FicheFournisseurPage />} />
+                <Route path="fournisseurs/bons-achats" element={<BonAchatsPage />} />
                 <Route path="fournisseurs/reglements-achats" element={<ModulePage />} />
                 <Route path="fournisseurs/factures-achats" element={<ModulePage />} />
                 <Route path="fournisseurs/reglements-factures" element={<ModulePage />} />
@@ -69,7 +58,10 @@ function AppRoutes() {
                 <Route path="fournisseurs/releve-compte" element={<ModulePage />} />
 
                 {/* Client */}
-                <Route path="clients/fiches" element={<GenericListPage title="Fiche Client" subtitle="Gestion des clients" endpoint="/clients" columns={clientCols} />} />
+                <Route path="clients/fiches" element={<FicheClientPage />} />
+                <Route path="clients/devis/nouveau" element={<DevisFormPage />} />
+                <Route path="clients/devis/:id" element={<DevisFormPage />} />
+                <Route path="clients/devis" element={<DevisListPage />} />
                 <Route path="clients/bons-vente" element={<ModulePage />} />
                 <Route path="clients/reglements-vente" element={<ModulePage />} />
                 <Route path="clients/factures-ventes" element={<ModulePage />} />
@@ -78,7 +70,7 @@ function AppRoutes() {
                 <Route path="clients/releve-compte" element={<ModulePage />} />
 
                 {/* Stock */}
-                <Route path="stock/produits" element={<StockPage />} />
+                <Route path="stock/produits" element={<FicheProduitPage />} />
                 <Route path="stock/mouvements" element={<ModulePage />} />
                 <Route path="stock/fiscal" element={<ModulePage />} />
 
@@ -92,6 +84,7 @@ function AppRoutes() {
                 <Route path="personnel/etat-paiement" element={<ModulePage />} />
 
                 {/* Suivi Monétaire */}
+                <Route path="monetaire/transactions" element={<TransactionsPage />} />
                 <Route path="monetaire/charges" element={<GenericListPage title="Charges" subtitle="Suivi monétaire" endpoint="/expenses" columns={expenseCols} />} />
                 <Route path="monetaire/salaires" element={<ModulePage />} />
                 <Route path="monetaire/tresorerie" element={<ModulePage />} />

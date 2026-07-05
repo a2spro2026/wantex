@@ -5,58 +5,84 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductApiController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Product::query()
+            ->when($request->search, fn ($q, $s) => $q->where(function ($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                    ->orWhere('reference', 'like', "%{$s}%")
+                    ->orWhere('article_id', 'like', "%{$s}%")
+                    ->orWhere('famille', 'like', "%{$s}%");
+            }))
+            ->orderBy('id');
+
+        if ($request->boolean('all')) {
+            $products = $query->get()->map(fn ($p) => $this->formatProduct($p));
+            $familles = Product::whereNotNull('famille')
+                ->where('famille', '!=', '')
+                ->distinct()
+                ->orderBy('famille')
+                ->pluck('famille')
+                ->values();
+
+            return response()->json([
+                'data' => $products,
+                'meta' => [
+                    'next_ref' => $this->nextReference(),
+                    'familles' => $familles,
+                ],
+            ]);
+        }
+
         return response()->json(
-            Product::with('category')
-                ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('reference', 'like', "%{$s}%"))
-                ->when($request->alert === 'low', fn ($q) => $q->whereColumn('quantity_in_stock', '<=', 'min_stock_alert'))
-                ->when($request->alert === 'out', fn ($q) => $q->where('quantity_in_stock', '<=', 0))
-                ->latest()->paginate(15)
+            $query->paginate(15)->through(fn ($p) => $this->formatProduct($p))
         );
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'reference' => 'required|string|unique:products',
-            'category_id' => 'nullable|exists:product_categories,id',
-            'brand' => 'nullable|string',
-            'unit' => 'required|string',
-            'quantity_in_stock' => 'numeric|min:0',
-            'min_stock_alert' => 'numeric|min:0',
-            'unit_price' => 'numeric|min:0',
-            'purchase_price' => 'numeric|min:0',
-            'location' => 'nullable|string',
-        ]);
+        $validated = $this->validated($request);
+        $initialStock = (float) ($validated['initial_stock'] ?? 0);
 
-        return response()->json(Product::create($validated), 201);
+        $product = DB::transaction(function () use ($validated, $initialStock) {
+            $product = Product::create([
+                ...$validated,
+                'reference' => 'Réf-PENDING',
+                'quantity_in_stock' => $initialStock,
+                'min_stock_alert' => $validated['min_stock_alert'] ?? 0,
+                'etat' => $validated['etat'] ?? 'Rupture',
+            ]);
+
+            $product->update(['reference' => $this->referenceFor($product->id)]);
+
+            return $product;
+        });
+
+        return response()->json($this->formatProduct($product), 201);
     }
 
     public function show(Product $product)
     {
-        return response()->json($product->load(['category', 'stockMovements']));
+        return response()->json($this->formatProduct($product));
     }
 
     public function update(Request $request, Product $product)
     {
-        $product->update($request->validate([
-            'name' => 'sometimes|string',
-            'reference' => 'sometimes|string|unique:products,reference,'.$product->id,
-            'brand' => 'nullable|string',
-            'quantity_in_stock' => 'numeric|min:0',
-            'min_stock_alert' => 'numeric|min:0',
-            'unit_price' => 'numeric|min:0',
-            'purchase_price' => 'numeric|min:0',
-            'location' => 'nullable|string',
-            'status' => 'in:actif,inactif',
-        ]));
+        $validated = $this->validated($request, $product->id);
 
-        return response()->json($product);
+        if (array_key_exists('initial_stock', $validated)) {
+            $validated['quantity_in_stock'] = (float) $validated['initial_stock'];
+        }
+
+        unset($validated['reference']);
+
+        $product->update($validated);
+
+        return response()->json($this->formatProduct($product->fresh()));
     }
 
     public function destroy(Product $product)
@@ -64,5 +90,57 @@ class ProductApiController extends Controller
         $product->delete();
 
         return response()->json(['message' => 'Produit supprimé']);
+    }
+
+    private function validated(Request $request, ?int $ignoreId = null): array
+    {
+        $articleUnique = 'unique:products,article_id';
+        if ($ignoreId) {
+            $articleUnique .= ','.$ignoreId;
+        }
+
+        return $request->validate([
+            'name' => 'required|string|max:500',
+            'article_id' => 'nullable|string|max:50|'.$articleUnique,
+            'consistance' => 'nullable|string|in:F,M,F+M',
+            'unit' => 'required|string|max:20',
+            'famille' => 'nullable|string|max:255',
+            'initial_stock' => 'numeric|min:0',
+            'min_stock_alert' => 'nullable|numeric|min:0',
+            'status' => 'in:actif,inactif',
+            'etat' => 'nullable|in:Dispo,Faible,Rupture',
+        ]);
+    }
+
+    private function nextReference(): string
+    {
+        return $this->referenceFor((Product::max('id') ?? 0) + 1);
+    }
+
+    private function referenceFor(int $id): string
+    {
+        return 'Réf-'.str_pad((string) $id, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function formatProduct(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'reference' => $product->reference,
+            'article_id' => $product->article_id,
+            'name' => $product->name,
+            'designation' => $product->name,
+            'consistance' => $product->consistance,
+            'unit' => $product->unit,
+            'famille' => $product->famille,
+            'initial_stock' => (float) $product->initial_stock,
+            'stock_initial' => (float) $product->initial_stock,
+            'quantity_in_stock' => (float) $product->quantity_in_stock,
+            'min_stock_alert' => (float) $product->min_stock_alert,
+            'status' => $product->status,
+            'statut' => $product->status === 'actif' ? 'Actif' : 'Inactif',
+            'etat' => $product->etatLabel(),
+            'created_at' => $product->created_at?->format('d/m/Y'),
+        ];
     }
 }
