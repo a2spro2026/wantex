@@ -1,12 +1,17 @@
 {
-    "name": "BatiXpert ERP",
-    "short_name": "BatiXpert",
-    "description": "Construisons l'avenir avec une gestion intelligente",
+    "name": "Wantex ERP",
+    "short_name": "Wantex",
+    "description": "Excellence en confection textile",
     "start_url": "/app",
     "display": "standalone",
-    "background_color": "#1E3A8A",
-    "theme_color": "#1E3A8A",
+    "background_color": "#4A1942",
+    "theme_color": "#831843",
     "icons": [
+        {
+            "src": "/icons/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        },
         {
             "src": "/icons/icon-192.png",
             "sizes": "192x192",

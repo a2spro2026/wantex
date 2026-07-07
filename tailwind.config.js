@@ -14,9 +14,9 @@ export default {
             },
             colors: {
                 brand: {
-                    navy: '#1E3A8A',
-                    orange: '#F97316',
-                    'navy-light': '#2563EB',
+                    navy: '#4A1942',
+                    orange: '#DB2777',
+                    'navy-light': '#831843',
                 },
             },
             boxShadow: {

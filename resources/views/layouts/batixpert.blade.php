@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Tableau de bord') - BatiXpert</title>
+    <link rel="icon" href="{{ asset('icons/logo.svg') }}" type="image/svg+xml">
+    <title>@yield('title', 'Tableau de bord') - Wantex</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -40,7 +41,7 @@
                         <span>Productivité optimisée</span>
                         <span>Sécurité des données</span>
                     </div>
-                    <div>© {{ date('Y') }} BatiXpert - Tous droits réservés | Version 1.0.0</div>
+                    <div>© {{ date('Y') }} Wantex - Tous droits réservés | Version 1.0.0</div>
                 </div>
             </footer>
         </div>

@@ -1,4 +1,4 @@
-import { Bell, Menu, Moon, Sun } from 'lucide-react';
+import { Bell, Menu, Moon, Scissors, Sun } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { NavbarBrand } from '../Logo';
 import UserAvatar from '../UserAvatar';
 import { getPageTitle } from '../../lib/pageMeta';
 
-export default function Header({ onMenuClick }) {
+export default function Header({ onMenuClick, sidebarOpen = true, onToggleSidebar }) {
     const { dark, toggle } = useTheme();
     const { user } = useAuth();
     const { pathname } = useLocation();
@@ -25,6 +25,16 @@ export default function Header({ onMenuClick }) {
                     >
                         <Menu className="w-5 h-5 text-slate-700 dark:text-slate-200" />
                     </button>
+                    {!sidebarOpen && (
+                        <button
+                            type="button"
+                            onClick={onToggleSidebar}
+                            className="hidden lg:flex p-2 rounded-xl bg-brand-navy/10 hover:bg-brand-navy/20 text-brand-navy dark:text-pink-300 dark:hover:bg-pink-900/30 transition-colors shrink-0"
+                            aria-label="Ouvrir le panneau latéral"
+                        >
+                            <Scissors className="w-5 h-5" strokeWidth={2} />
+                        </button>
+                    )}
                     <NavbarBrand pageTitle={pageTitle} />
                 </div>
 
@@ -52,7 +62,7 @@ export default function Header({ onMenuClick }) {
                         <div className="flex items-center gap-2.5 ml-1 pl-3 border-l border-slate-200 dark:border-slate-700">
                             <div className="hidden sm:block text-right leading-tight">
                                 <p className="text-sm font-bold text-slate-800 dark:text-white whitespace-nowrap">
-                                    {user.name || 'MR AHMED'}
+                                    {user.name || 'MR ABDELLAH'}
                                 </p>
                                 <p className="text-[11px] font-semibold text-brand-orange whitespace-nowrap">
                                     {user.title || 'Directeur Général'}

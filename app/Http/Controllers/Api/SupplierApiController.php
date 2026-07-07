@@ -71,6 +71,7 @@ class SupplierApiController extends Controller
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'city' => 'nullable|string',
+            'payment_terms' => 'nullable|string',
             'reglement' => 'nullable|in:Esp,Chq,Eff,Vir,Vers',
             'initial_balance' => 'nullable|numeric',
             'status' => 'in:actif,inactif',
@@ -109,6 +110,7 @@ class SupplierApiController extends Controller
             'solde' => round((float) $supplier->initial_balance, 2),
             'status' => $supplier->status,
             'payment_terms' => $supplier->payment_terms,
+            'echeance' => $supplier->payment_terms,
             'reglement' => $supplier->reglement,
             'created_at' => $supplier->created_at?->format('d/m/Y'),
         ];

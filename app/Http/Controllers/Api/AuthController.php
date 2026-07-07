@@ -31,7 +31,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken('batixpert-spa')->plainTextToken;
+        $token = $user->createToken('wantex-spa')->plainTextToken;
 
         return response()->json([
             'token' => $token,
@@ -61,7 +61,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'role' => $user->role?->only(['id', 'name', 'slug']),
-            'permissions' => $user->role?->permissions->pluck('slug') ?? [],
+            'permissions' => $user->allPermissions(),
             'is_admin' => $user->isAdmin(),
             'title' => $user->isAdmin() ? 'Directeur Général' : ($user->role?->name ?? ''),
         ];

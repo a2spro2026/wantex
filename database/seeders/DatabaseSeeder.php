@@ -28,9 +28,9 @@ class DatabaseSeeder extends Seeder
         $adminRole = Role::where('slug', 'administrateur')->first();
 
         User::firstOrCreate(
-            ['email' => 'admin@batixpert.ma'],
+            ['email' => 'admin@wantex.ma'],
             [
-                'name' => 'MR AHMED',
+                'name' => 'MR ABDELLAH',
                 'password' => Hash::make('password'),
                 'role_id' => $adminRole->id,
                 'phone' => '0600000000',

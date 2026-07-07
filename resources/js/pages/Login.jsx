@@ -121,7 +121,7 @@ function PasswordField({ value, onChange, showPassword, onToggle }) {
 }
 
 export default function Login() {
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState('admin@wantex.ma');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [remember, setRemember] = useState(false);
@@ -152,14 +152,14 @@ export default function Login() {
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
                 style={{ backgroundImage: "url('/images/login-bg.png')" }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/55 via-slate-900/25 to-slate-900/75" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2d1028]/80 via-[#4a1942]/45 to-[#1f0a1c]/70" />
 
             {/* Particules décoratives */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {[...Array(6)].map((_, i) => (
                     <motion.div
                         key={i}
-                        className="absolute w-1 h-1 rounded-full bg-brand-orange/40"
+                        className="absolute w-1 h-1 rounded-full bg-pink-300/50"
                         style={{ left: `${15 + i * 14}%`, top: `${20 + (i % 3) * 25}%` }}
                         animate={{
                             y: [0, -30, 0],
@@ -244,7 +244,7 @@ export default function Login() {
 
                                         <div>
                                             <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                                                Nom d'utilisateur
+                                                Email
                                             </label>
                                             <motion.div
                                                 animate={{ scale: emailFocused ? 1.01 : 1 }}
@@ -263,7 +263,7 @@ export default function Login() {
                                                     onChange={(e) => setEmail(e.target.value)}
                                                     onFocus={() => setEmailFocused(true)}
                                                     onBlur={() => setEmailFocused(false)}
-                                                    placeholder="Votre email"
+                                                    placeholder="admin@wantex.ma"
                                                     required
                                                     className="block w-full pl-11 pr-3 py-3 text-sm text-slate-900 bg-white outline-none placeholder:text-slate-400"
                                                 />
