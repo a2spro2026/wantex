@@ -1,7 +1,7 @@
-import { Banknote, Package, Receipt } from 'lucide-react';
+import { Banknote, Package, Receipt, Wallet } from 'lucide-react';
 import ReportTable from './ReportTable';
 
-function StatutBadge({ value }) {
+function EtatProduitBadge({ value }) {
     const isActif = value === 'Actif';
     return (
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
@@ -14,10 +14,10 @@ function StatutBadge({ value }) {
     );
 }
 
-function EtatBadge({ value }) {
+function StatutStockBadge({ value }) {
     const styles = {
         Dispo: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-        Faible: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
+        Faible: 'bg-amber-400/20 text-amber-700 dark:text-amber-300',
         Rupture: 'bg-red-500/15 text-red-700 dark:text-red-400',
     };
 
@@ -28,7 +28,7 @@ function EtatBadge({ value }) {
     );
 }
 
-const debitColumns = [
+const fournisseurColumns = [
     { key: 'date', label: 'Date' },
     { key: 'fournisseur', label: 'Nom Fournisseur' },
     { key: 'type_regl', label: 'Type Règl.' },
@@ -37,13 +37,20 @@ const debitColumns = [
     { key: 'date_decaiss', label: 'Date Décaiss.' },
 ];
 
-const consommationColumns = [
+const clientColumns = [
+    { key: 'date', label: 'Date' },
+    { key: 'client', label: 'Nom Client' },
+    { key: 'type_regl', label: 'Type Règlement' },
+    { key: 'numero', label: 'N°' },
+    { key: 'montant', label: 'Montant', align: 'right' },
+    { key: 'date_encaiss', label: 'Date Encaiss' },
+];
+
+const produitsActifsColumns = [
     { key: 'ref', label: 'Réf' },
     { key: 'designation', label: 'Désignation' },
-    { key: 'qte', label: 'Qté', align: 'right', render: (v) => Number(v).toLocaleString('fr-FR') },
-    { key: 'destination', label: 'Destination' },
-    { key: 'statut', label: 'Statut', render: (v) => <StatutBadge value={v} /> },
-    { key: 'etat', label: 'État', render: (v) => <EtatBadge value={v} /> },
+    { key: 'etat', label: 'Etat', render: (v) => <EtatProduitBadge value={v} /> },
+    { key: 'statut', label: 'Statut', render: (v) => <StatutStockBadge value={v} /> },
 ];
 
 const chargesColumns = [
@@ -56,23 +63,37 @@ const chargesColumns = [
 export default function DashboardTables({ tables, loading }) {
     return (
         <div className="space-y-6 pb-2">
-            <ReportTable
-                title="Etat Débit"
-                icon={Banknote}
-                columns={debitColumns}
-                rows={tables?.etat_debit}
-                loading={loading}
-                accent="from-brand-navy via-blue-800 to-blue-900"
-            />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <ReportTable
+                    title="Etat 5 Derniers Règlements Fournisseur"
+                    icon={Banknote}
+                    columns={fournisseurColumns}
+                    rows={tables?.etat_reglements_fournisseur}
+                    loading={loading}
+                    accent="from-brand-navy via-blue-800 to-blue-900"
+                    compact
+                />
+
+                <ReportTable
+                    title="Etat 5 Derniers Règlement Client"
+                    icon={Wallet}
+                    columns={clientColumns}
+                    rows={tables?.etat_reglements_client}
+                    loading={loading}
+                    accent="from-emerald-600 via-teal-600 to-green-800"
+                    compact
+                />
+            </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <ReportTable
-                    title="Etat Consommation — Top 5"
+                    title="Etat 5 Produits Actifs"
                     icon={Package}
-                    columns={consommationColumns}
-                    rows={tables?.etat_consommation}
+                    columns={produitsActifsColumns}
+                    rows={tables?.etat_produits_actifs}
                     loading={loading}
                     accent="from-amber-500 via-orange-500 to-orange-700"
+                    compact
                 />
 
                 <ReportTable

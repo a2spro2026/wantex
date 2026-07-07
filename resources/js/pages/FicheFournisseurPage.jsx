@@ -18,6 +18,7 @@ const emptyForm = {
     address: '',
     city: '',
     reglement: '',
+    echeance: '',
 };
 
 function Field({ label, children, className = '' }) {
@@ -54,7 +55,7 @@ th{background:#f8fafc;width:180px;font-weight:600}
 .footer{margin-top:32px;font-size:11px;color:#94a3b8;text-align:center}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#fff7ed;color:#ea580c;font-weight:700}
 </style></head><body>
-<h1>BATIXPERT — Fiche Fournisseur</h1>
+<h1>WANTEX — Fiche Fournisseur</h1>
 <p class="sub">Document généré le ${new Date().toLocaleDateString('fr-FR')}</p>
 <table>
 <tr><th>ID</th><td><span class="badge">${row.code}</span></td></tr>
@@ -64,10 +65,11 @@ th{background:#f8fafc;width:180px;font-weight:600}
 <tr><th>Adresse</th><td>${row.address || '—'}</td></tr>
 <tr><th>Ville</th><td>${row.city || '—'}</td></tr>
 <tr><th>Règlement</th><td>${row.reglement || '—'}</td></tr>
+<tr><th>Échéance</th><td>${row.echeance || row.payment_terms || '—'}</td></tr>
 <tr><th>Solde</th><td><strong>${formatSolde(row.solde)}</strong></td></tr>
 <tr><th>Date création</th><td>${row.created_at || '—'}</td></tr>
 </table>
-<p class="footer">© BatiXpert — A2SPRO</p>
+<p class="footer">© Wantex — A2SPRO</p>
 </body></html>`;
 }
 
@@ -131,6 +133,7 @@ function ViewModal({ row, onClose }) {
                         ['Adresse', row.address],
                         ['Ville', row.city],
                         ['Règlement', row.reglement],
+                        ['Échéance', row.echeance || row.payment_terms],
                         ['Solde', formatSolde(row.solde)],
                         ['Date', row.created_at],
                     ].map(([label, value]) => (
@@ -195,6 +198,7 @@ export default function FicheFournisseurPage() {
             address: row.address || '',
             city: row.city || '',
             reglement: row.reglement || '',
+            echeance: row.echeance || row.payment_terms || '',
         });
         setEditingId(row.id);
         setError('');
@@ -223,6 +227,7 @@ export default function FicheFournisseurPage() {
             address: form.address || null,
             city: form.city || null,
             reglement: form.reglement || null,
+            payment_terms: form.echeance || null,
         };
         try {
             if (editingId) {
@@ -255,7 +260,7 @@ export default function FicheFournisseurPage() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 xl:grid-cols-[80px_80px_1.2fr_0.9fr_1fr_1.1fr_0.7fr_0.7fr] gap-2.5 items-end">
+                <div className="grid grid-cols-2 sm:grid-cols-5 xl:grid-cols-[72px_72px_1.15fr_88px_1fr_1.05fr_0.75fr_0.75fr_0.8fr] gap-2.5 items-end">
                     <Field label="Date">
                         <input type="text" readOnly value={meta.date} className={readOnlyClass} />
                     </Field>
@@ -265,8 +270,8 @@ export default function FicheFournisseurPage() {
                     <Field label="Nom Fournisseur">
                         <input type="text" required value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Raison sociale" className={inputClass} />
                     </Field>
-                    <Field label="N° Téléphone">
-                        <input type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="06 XX XX XX XX" className={inputClass} />
+                    <Field label="N° Tél.">
+                        <input type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="06..." className={`${inputClass} !px-1.5 text-[11px]`} />
                     </Field>
                     <Field label="E-mail">
                         <input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="contact@..." className={inputClass} />
@@ -283,6 +288,9 @@ export default function FicheFournisseurPage() {
                                 <option key={opt.value || 'empty'} value={opt.value}>{opt.label}</option>
                             ))}
                         </select>
+                    </Field>
+                    <Field label="Échéance">
+                        <input type="text" value={form.echeance} onChange={(e) => set('echeance', e.target.value)} placeholder="30 jours" className={inputClass} />
                     </Field>
                 </div>
 
@@ -307,10 +315,10 @@ export default function FicheFournisseurPage() {
                     <h3 className="text-sm font-bold text-white uppercase tracking-wide">Liste des fournisseurs</h3>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[960px]">
+                    <table className="w-full text-sm min-w-[1080px]">
                         <thead>
                             <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
-                                {['ID', 'Nom Fournisseur', 'Contact', 'Adresse', 'Ville', 'Règlement', 'Solde', 'Actions'].map((h) => (
+                                {['ID', 'Nom Fournisseur', 'Contact', 'Adresse', 'Ville', 'Règlement', 'Échéance', 'Solde', 'Actions'].map((h) => (
                                     <th
                                         key={h}
                                         className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap text-center"
@@ -324,7 +332,7 @@ export default function FicheFournisseurPage() {
                             {loading ? (
                                 [...Array(3)].map((_, i) => (
                                     <tr key={i}>
-                                        {[...Array(8)].map((__, j) => (
+                                        {[...Array(9)].map((__, j) => (
                                             <td key={j} className="px-4 py-3 text-center">
                                                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mx-auto max-w-[80px]" />
                                             </td>
@@ -348,6 +356,9 @@ export default function FicheFournisseurPage() {
                                                 {row.reglement || '—'}
                                             </span>
                                         </td>
+                                        <td className="px-4 py-2.5 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                            {row.echeance || row.payment_terms || '—'}
+                                        </td>
                                         <td className="px-4 py-2.5 text-center font-semibold tabular-nums text-brand-navy dark:text-orange-400">{formatSolde(row.solde)}</td>
                                         <td className="px-4 py-2.5">
                                             <div className="flex items-center justify-center gap-0.5">
@@ -362,7 +373,7 @@ export default function FicheFournisseurPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
+                                    <td colSpan={9} className="px-4 py-12 text-center text-slate-400">
                                         Aucun fournisseur enregistré
                                     </td>
                                 </tr>

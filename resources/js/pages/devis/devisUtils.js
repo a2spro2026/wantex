@@ -313,7 +313,7 @@ body {
 <div class="sheet">
     <div class="header">
         <div class="brand">
-            <h1>BATIXPERT</h1>
+            <h1>WANTEX</h1>
             <p>Gestion intelligente — Bâtiment &amp; Travaux Publics</p>
         </div>
         <div class="doc-box">
@@ -376,7 +376,7 @@ body {
     </div>
 
     <div class="footer">
-        <span>Document généré le ${new Date().toLocaleDateString('fr-FR')} — BATIXPERT</span>
+        <span>Document généré le ${new Date().toLocaleDateString('fr-FR')} — WANTEX</span>
         <span>Devis valable 30 jours — Merci de votre confiance</span>
     </div>
 </div>

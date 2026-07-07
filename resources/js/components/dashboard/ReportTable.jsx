@@ -5,17 +5,18 @@ function formatMontant(value) {
     return `${n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MAD`;
 }
 
-export default function ReportTable({ title, icon: Icon, columns, rows, loading, accent = 'from-brand-navy to-blue-700' }) {
+export default function ReportTable({ title, icon: Icon, columns, rows, loading, accent = 'from-brand-navy to-blue-700', compact = false }) {
     const totalMontant = rows?.reduce((sum, row) => sum + (Number(row.montant) || 0), 0);
     const montantIdx = columns.findIndex((c) => c.key === 'montant');
     const hasMontantTotal = !loading && rows?.length > 0 && totalMontant > 0 && montantIdx >= 0;
+    const skeletonRows = compact ? 5 : 4;
 
     return (
         <div className="report-table rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-lg overflow-hidden">
-            <div className={`flex items-center justify-between gap-3 px-5 py-3.5 bg-gradient-to-r ${accent}`}>
-                <div className="flex items-center gap-2.5 min-w-0">
-                    {Icon && <Icon className="w-5 h-5 text-white shrink-0" strokeWidth={2} />}
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wide truncate">{title}</h3>
+            <div className={`flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r ${accent}`}>
+                <div className="flex items-center gap-2 min-w-0">
+                    {Icon && <Icon className="w-4 h-4 text-white shrink-0" strokeWidth={2} />}
+                    <h3 className={`font-bold text-white uppercase tracking-wide truncate ${compact ? 'text-[11px]' : 'text-sm'}`}>{title}</h3>
                 </div>
                 <span className="text-[10px] font-semibold text-white/80 bg-white/15 px-2 py-1 rounded-full shrink-0">
                     {loading ? '…' : `${rows?.length ?? 0} ligne(s)`}
@@ -23,13 +24,13 @@ export default function ReportTable({ title, icon: Icon, columns, rows, loading,
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[640px]">
+                <table className={`w-full text-sm ${compact ? 'min-w-[520px] text-xs' : 'min-w-[640px]'}`}>
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
-                                    className={`px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap ${
+                                    className={`${compact ? 'px-2.5 py-2' : 'px-4 py-3'} text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap ${
                                         col.align === 'right' ? 'text-right' : 'text-left'
                                     }`}
                                 >
@@ -40,11 +41,11 @@ export default function ReportTable({ title, icon: Icon, columns, rows, loading,
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {loading ? (
-                            [...Array(4)].map((_, i) => (
+                            [...Array(skeletonRows)].map((_, i) => (
                                 <tr key={i}>
                                     {columns.map((col) => (
-                                        <td key={col.key} className="px-4 py-3">
-                                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                                        <td key={col.key} className={compact ? 'px-2.5 py-2' : 'px-4 py-3'}>
+                                            <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                                         </td>
                                     ))}
                                 </tr>
@@ -58,7 +59,7 @@ export default function ReportTable({ title, icon: Icon, columns, rows, loading,
                                     {columns.map((col) => (
                                         <td
                                             key={col.key}
-                                            className={`px-4 py-2.5 text-slate-700 dark:text-slate-300 ${
+                                            className={`${compact ? 'px-2.5 py-2' : 'px-4 py-2.5'} text-slate-700 dark:text-slate-300 ${
                                                 col.align === 'right' ? 'text-right font-semibold tabular-nums' : ''
                                             }`}
                                         >
@@ -88,7 +89,7 @@ export default function ReportTable({ title, icon: Icon, columns, rows, loading,
                             </tr>
                         )}
                     </tbody>
-                    {hasMontantTotal && (
+                    {hasMontantTotal && !compact && (
                         <tfoot>
                             <tr className="bg-slate-50 dark:bg-slate-800/50 border-t-2 border-slate-200 dark:border-slate-700">
                                 <td colSpan={montantIdx} className="px-4 py-3 text-right text-xs font-bold uppercase text-slate-500">
