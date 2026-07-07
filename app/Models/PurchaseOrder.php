@@ -10,8 +10,8 @@ class PurchaseOrder extends Model
 {
     protected $fillable = [
         'reference', 'order_date', 'supplier_id', 'chantier_id',
-        'designation', 'consistance', 'unit', 'unit_price', 'quantity', 'subtotal',
-        'reglement', 'echeance', 'city', 'address', 'chantier_type', 'responsible_name',
+        'designation', 'article_ref', 'consistance', 'unit', 'unit_price', 'quantity', 'subtotal',
+        'reglement', 'echeance', 'city', 'address', 'chantier_type', 'destination', 'responsible_name',
         'total_ht', 'tva', 'total_ttc', 'status', 'notes', 'user_id',
     ];
 
