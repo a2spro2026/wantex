@@ -1,29 +1,33 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-    HardHat, Package, Warehouse, Receipt, Vault, TrendingUp, TrendingDown,
+    ArrowDownCircle, ArrowUpCircle, Warehouse, Receipt, Users,
 } from 'lucide-react';
 import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const cards = [
     {
-        key: 'nombre_chantiers',
-        label: 'Nombre de Chantiers',
-        icon: HardHat,
-        format: 'number',
+        key: 'total_debit',
+        perm: 'dashboard.total-debit.view',
+        label: 'Total Débit',
+        icon: ArrowDownCircle,
+        format: 'currency',
         gradient: 'from-blue-700 via-brand-navy to-slate-900',
         glow: 'rgba(30, 58, 95, 0.4)',
     },
     {
-        key: 'valeur_stock_chantiers',
-        label: 'Valeur Stock sur Chantiers',
-        icon: Package,
+        key: 'credit_en_instance',
+        perm: 'dashboard.credit-instance.view',
+        label: 'Crédit en Instance',
+        icon: ArrowUpCircle,
         format: 'currency',
         gradient: 'from-amber-500 via-orange-500 to-orange-700',
         glow: 'rgba(249, 115, 22, 0.4)',
     },
     {
         key: 'valeur_stock_depot',
+        perm: 'dashboard.valeur-stock.view',
         label: 'Valeur Stock Dépôt',
         icon: Warehouse,
         format: 'currency',
@@ -32,6 +36,7 @@ const cards = [
     },
     {
         key: 'total_charges',
+        perm: 'dashboard.total-charges.view',
         label: 'Total Charges',
         icon: Receipt,
         format: 'currency',
@@ -39,15 +44,27 @@ const cards = [
         glow: 'rgba(244, 63, 94, 0.35)',
     },
     {
-        key: 'tresorerie',
-        label: 'Trésorerie',
-        icon: Vault,
-        format: 'currency',
+        key: 'nombre_clients_actifs',
+        perm: 'dashboard.clients-actifs.view',
+        label: 'Nombre Client Actif',
+        icon: Users,
+        format: 'number',
         gradient: 'from-violet-500 via-purple-600 to-indigo-900',
         glow: 'rgba(139, 92, 246, 0.4)',
-        dynamic: true,
     },
 ];
+
+function useVisibleCards() {
+    const { user, can } = useAuth();
+    // L'admin voit tout. Sinon on filtre par droit; si aucun droit dashboard
+    // spécifique n'est défini, on affiche toutes les cartes par défaut.
+    if (user?.is_admin) return cards;
+    const hasDashboardOverrides = (user?.permissions ?? []).some(
+        (p) => p.startsWith('dashboard.') && p !== 'dashboard.view',
+    );
+    if (!hasDashboardOverrides) return cards;
+    return cards.filter((card) => can(card.perm));
+}
 
 function formatValue(value, format) {
     const num = Number(value) || 0;
@@ -82,9 +99,6 @@ function AnimatedValue({ value, format }) {
 
 function KpiCard({ card, value, index }) {
     const Icon = card.icon;
-    const isTresorerie = card.key === 'tresorerie';
-    const num = Number(value) || 0;
-    const positive = num >= 0;
 
     return (
         <motion.div
@@ -103,13 +117,6 @@ function KpiCard({ card, value, index }) {
                     <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm">
                         <Icon className="w-4 h-4 text-white" strokeWidth={2} />
                     </div>
-                    {isTresorerie && (
-                        <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${
-                            positive ? 'bg-white/25 text-white' : 'bg-black/25 text-red-200'
-                        }`}>
-                            {positive ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                        </span>
-                    )}
                 </div>
 
                 <p className="text-[10px] font-semibold text-white/80 uppercase tracking-wide leading-tight mb-1 line-clamp-2 min-h-[2rem]">
@@ -136,12 +143,14 @@ function SectionTitle() {
 }
 
 export default function KpiCards({ kpis, loading }) {
+    const visibleCards = useVisibleCards();
+
     if (loading) {
         return (
             <div>
                 <SectionTitle />
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                    {cards.map((card) => (
+                    {visibleCards.map((card) => (
                         <div key={card.key} className="kpi-card-skeleton rounded-xl h-[88px]" />
                     ))}
                 </div>
@@ -149,11 +158,13 @@ export default function KpiCards({ kpis, loading }) {
         );
     }
 
+    if (!visibleCards.length) return null;
+
     return (
         <div>
             <SectionTitle />
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                {cards.map((card, i) => (
+                {visibleCards.map((card, i) => (
                     <KpiCard key={card.key} card={card} value={kpis?.[card.key]} index={i} />
                 ))}
             </div>

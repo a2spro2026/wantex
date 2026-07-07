@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut, Scissors } from 'lucide-react';
 import { navigation } from '../../config/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { SidebarBrand } from '../Logo';
@@ -82,33 +82,49 @@ function NavChildItem({ child, onClose, index }) {
     );
 }
 
-function DashboardLink({ item, onClose }) {
+function DashboardRow({ item, onClose, panelOpen, onTogglePanel }) {
     return (
-        <NavLink
-            to={item.to}
-            end
-            onClick={onClose}
-            className={({ isActive }) =>
-                `sidebar-nav-item relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    isActive
+        <div className="flex items-center gap-2">
+            <NavLink
+                to={item.to}
+                end
+                onClick={onClose}
+                className={({ isActive }) =>
+                    `sidebar-nav-item relative flex flex-1 items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                        isActive
+                            ? 'sidebar-nav-active text-white'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white hover:translate-x-0.5'
+                    }`
+                }
+            >
+                {({ isActive }) => (
+                    <>
+                        {isActive && (
+                            <motion.span
+                                layoutId="sidebar-main-indicator"
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-white/80 sidebar-active-indicator"
+                            />
+                        )}
+                        <span>{item.label}</span>
+                    </>
+                )}
+            </NavLink>
+            <motion.button
+                type="button"
+                onClick={onTogglePanel}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                aria-label={panelOpen ? 'Fermer le panneau latéral' : 'Ouvrir le panneau latéral'}
+                aria-expanded={panelOpen}
+                className={`sidebar-nav-item relative flex items-center justify-center rounded-xl transition-all duration-300 shrink-0 ${
+                    panelOpen
                         ? 'sidebar-nav-active text-white'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white hover:translate-x-0.5'
-                }`
-            }
-        >
-            {({ isActive }) => (
-                <>
-                    {isActive && (
-                        <motion.span
-                            layoutId="sidebar-main-indicator"
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-white/80 sidebar-active-indicator"
-                        />
-                    )}
-                    <NavIcon icon={item.icon} active={isActive} />
-                    <span>{item.label}</span>
-                </>
-            )}
-        </NavLink>
+                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                }`}
+            >
+                <NavIcon icon={Scissors} active={panelOpen} />
+            </motion.button>
+        </div>
     );
 }
 
@@ -206,12 +222,35 @@ function NavGroup({ group, onClose, index }) {
     );
 }
 
-export default function Sidebar({ mobile, onClose }) {
+function permissionForChild(child) {
+    const parts = child.to.split('/').filter(Boolean);
+    if (parts.length < 2) return null;
+
+    return `${parts[0]}.${parts[parts.length - 1]}.view`;
+}
+
+export default function Sidebar({ mobile, onClose, onTogglePanel }) {
     const { can, logout } = useAuth();
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const pageTitle = getPageTitle(pathname);
-    const visibleNav = navigation.filter((item) => can(item.perm));
+    const visibleNav = navigation
+        .map((item) => {
+            if (!item.children) return can(item.perm) ? item : null;
+
+            const children = item.children.filter((child) => {
+                const permission = permissionForChild(child);
+                const parts = child.to.split('/').filter(Boolean);
+                const legacyPermission = parts.length ? `${parts[parts.length - 1]}.view` : null;
+
+                return permission ? can(permission) || can(legacyPermission) : can(item.perm);
+            });
+
+            if (!children.length && !can(item.perm)) return null;
+
+            return { ...item, children };
+        })
+        .filter(Boolean);
     const dashboardItem = visibleNav.find((item) => item.id === 'dashboard');
     const menuGroups = visibleNav.filter((item) => item.id !== 'dashboard');
 
@@ -224,8 +263,8 @@ export default function Sidebar({ mobile, onClose }) {
     return (
         <aside
             className={`sidebar-panel ${
-                mobile ? 'fixed inset-y-0 left-0 z-50 w-72' : 'hidden lg:flex lg:w-72 lg:sticky lg:top-0'
-            } flex-col h-screen text-white shrink-0`}
+                mobile ? 'fixed inset-y-0 left-0 z-50 w-72' : 'flex w-72 h-screen'
+            } flex-col text-white shrink-0`}
         >
             {/* Décor fond */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -240,12 +279,16 @@ export default function Sidebar({ mobile, onClose }) {
                 </div>
                 {dashboardItem && (
                     <div className="px-3 pb-3">
-                        <DashboardLink item={dashboardItem} onClose={onClose} />
+                        <DashboardRow
+                            item={dashboardItem}
+                            onClose={onClose}
+                            panelOpen
+                            onTogglePanel={onTogglePanel}
+                        />
                     </div>
                 )}
             </div>
 
-            {/* Menus déroulants — zone scrollable */}
             <nav className="relative flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3">
                 <div className="space-y-1">
                     {menuGroups.map((group, i) => (

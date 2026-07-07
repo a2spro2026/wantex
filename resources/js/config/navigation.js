@@ -26,7 +26,7 @@ import {
     Boxes,
     ArrowLeftRight,
     Archive,
-    // Chantiers
+    // Ateliers Production
     MapPin,
     ClipboardCheck,
     TrendingDown,
@@ -37,6 +37,7 @@ import {
     MinusCircle,
     Coins,
     Vault,
+    Layers,
 } from 'lucide-react';
 
 export const navigation = [
@@ -91,11 +92,11 @@ export const navigation = [
     },
     {
         id: 'chantiers',
-        label: 'Chantiers',
+        label: 'Ateliers Production',
         icon: HardHat,
         perm: 'chantiers.view',
         children: [
-            { to: '/chantiers/carte', label: 'Carte Chantiers', icon: MapPin },
+            { to: '/chantiers/carte', label: 'Mouvement Produit Fini', icon: MapPin },
             { to: '/chantiers/bons-commande', label: 'Bon de Commande', icon: ClipboardCheck },
             { to: '/chantiers/suivi-depenses', label: 'Suivi Dépenses', icon: TrendingDown },
         ],
@@ -129,6 +130,7 @@ export const navigation = [
         perm: 'utilisateurs.view',
         children: [
             { to: '/configuration/utilisateurs', label: 'Utilisateur', icon: UserCog },
+            { to: '/configuration/familles-produits', label: 'Famille Produit', icon: Layers },
         ],
     },
 ];

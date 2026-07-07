@@ -5,8 +5,9 @@ import Layout from './components/layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ChantiersPage from './pages/ChantiersPage';
-import BonAchatsPage from './pages/BonAchatsPage';
+import BonAchatsListPage from './pages/bonAchats/BonAchatsListPage';
 import FicheProduitPage from './pages/FicheProduitPage';
+import FamilleProduitPage from './pages/FamilleProduitPage';
 import GenericListPage from './pages/GenericListPage';
 import ModulePage from './pages/ModulePage';
 import FicheFournisseurPage from './pages/FicheFournisseurPage';
@@ -14,6 +15,7 @@ import FicheClientPage from './pages/FicheClientPage';
 import DevisListPage from './pages/devis/DevisListPage';
 import DevisFormPage from './pages/devis/DevisFormPage';
 import TransactionsPage from './pages/TransactionsPage';
+import UtilisateurPage from './pages/UtilisateurPage';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -50,7 +52,9 @@ function AppRoutes() {
 
                 {/* Fournisseur */}
                 <Route path="fournisseurs/fiches" element={<FicheFournisseurPage />} />
-                <Route path="fournisseurs/bons-achats" element={<BonAchatsPage />} />
+                <Route path="fournisseurs/bons-achats/nouveau" element={<Navigate to="/fournisseurs/bons-achats" replace />} />
+                <Route path="fournisseurs/bons-achats/:id" element={<Navigate to="/fournisseurs/bons-achats" replace />} />
+                <Route path="fournisseurs/bons-achats" element={<BonAchatsListPage />} />
                 <Route path="fournisseurs/reglements-achats" element={<ModulePage />} />
                 <Route path="fournisseurs/factures-achats" element={<ModulePage />} />
                 <Route path="fournisseurs/reglements-factures" element={<ModulePage />} />
@@ -90,7 +94,8 @@ function AppRoutes() {
                 <Route path="monetaire/tresorerie" element={<ModulePage />} />
 
                 {/* Configuration */}
-                <Route path="configuration/utilisateurs" element={<ModulePage />} />
+                <Route path="configuration/utilisateurs" element={<UtilisateurPage />} />
+                <Route path="configuration/familles-produits" element={<FamilleProduitPage />} />
 
                 {/* Redirections anciennes routes */}
                 <Route path="chantiers" element={<Navigate to="/chantiers/carte" replace />} />

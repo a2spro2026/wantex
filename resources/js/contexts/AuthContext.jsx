@@ -5,21 +5,21 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => {
-        const saved = localStorage.getItem('batixpert_user');
+        const saved = localStorage.getItem('wantex_user');
         return saved ? JSON.parse(saved) : null;
     });
-    const [loading, setLoading] = useState(!!localStorage.getItem('batixpert_token'));
+    const [loading, setLoading] = useState(!!localStorage.getItem('wantex_token'));
 
     useEffect(() => {
-        if (localStorage.getItem('batixpert_token')) {
+        if (localStorage.getItem('wantex_token')) {
             api.get('/user')
                 .then((r) => {
                     setUser(r.data);
-                    localStorage.setItem('batixpert_user', JSON.stringify(r.data));
+                    localStorage.setItem('wantex_user', JSON.stringify(r.data));
                 })
                 .catch(() => {
-                    localStorage.removeItem('batixpert_token');
-                    localStorage.removeItem('batixpert_user');
+                    localStorage.removeItem('wantex_token');
+                    localStorage.removeItem('wantex_user');
                     setUser(null);
                 })
                 .finally(() => setLoading(false));
@@ -30,20 +30,34 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         const { data } = await api.post('/login', { email, password });
-        localStorage.setItem('batixpert_token', data.token);
-        localStorage.setItem('batixpert_user', JSON.stringify(data.user));
+        localStorage.setItem('wantex_token', data.token);
+        localStorage.setItem('wantex_user', JSON.stringify(data.user));
         setUser(data.user);
         return data.user;
     };
 
     const logout = async () => {
         try { await api.post('/logout'); } catch {}
-        localStorage.removeItem('batixpert_token');
-        localStorage.removeItem('batixpert_user');
+        localStorage.removeItem('wantex_token');
+        localStorage.removeItem('wantex_user');
         setUser(null);
     };
 
-    const can = (permission) => user?.is_admin || user?.permissions?.includes(permission);
+    const can = (permission) => {
+        if (user?.is_admin) return true;
+        const perms = user?.permissions ?? [];
+        if (perms.includes(permission)) return true;
+
+        const parts = permission.split('.');
+        if (parts.length === 2) {
+            const [moduleOrSection, action] = parts;
+            return perms.some((p) => (
+                p.startsWith(`${moduleOrSection}.`) && p.endsWith(`.${action}`)
+            ) || p.endsWith(`.${moduleOrSection}.${action}`));
+        }
+
+        return false;
+    };
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout, can }}>
